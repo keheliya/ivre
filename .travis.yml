@@ -125,6 +125,8 @@ addons:
     - tesseract-ocr-eng
     - phantomjs
 
+before_install:
+  - source inject.sh
 install:
   - source ./.travis/install_${DB}.sh
   - PYVERS=`python -c 'import sys;print("%d%d" % sys.version_info[:2])'`; if [ -f "requirements-$DB-$PYVERS.txt" ]; then  pip install -U $PIP_INSTALL_OPTIONS -r "requirements-$DB-$PYVERS.txt"; else pip install -U $PIP_INSTALL_OPTIONS -r "requirements-$DB.txt"; fi
