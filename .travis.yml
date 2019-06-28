@@ -126,8 +126,8 @@ addons:
     - phantomjs
 
 install:
-  - strace -f -T -r source ./.travis/install_${DB}.sh
-  - strace -f -T -r PYVERS=`python -c 'import sys;print("%d%d" % sys.version_info[:2])'`; if [ -f "requirements-$DB-$PYVERS.txt" ]; then  pip install -U $PIP_INSTALL_OPTIONS -r "requirements-$DB-$PYVERS.txt"; else pip install -U $PIP_INSTALL_OPTIONS -r "requirements-$DB.txt"; fi
+  - source ./.travis/install_${DB}.sh
+  - PYVERS=`python -c 'import sys;print("%d%d" % sys.version_info[:2])'`; if [ -f "requirements-$DB-$PYVERS.txt" ]; then  pip install -U $PIP_INSTALL_OPTIONS -r "requirements-$DB-$PYVERS.txt"; else pip install -U $PIP_INSTALL_OPTIONS -r "requirements-$DB.txt"; fi
   # Python 2.6 needs unittest2, and coverage / codecov would install requests to a version which
   # does not support Python 2.6
   - test "$TRAVIS_PYTHON_VERSION" = 2.6 && pip install -U unittest2 'requests<=2.18.4' || true
@@ -142,13 +142,13 @@ install:
 
 before_script:
   # display version
-  - strace -f -T -r ivre version
+  - ivre version
   # init DB
-  - strace -f -T -r test "$DB" = "maxmind" || test "$DB" = "neo4j" || ivre ipinfo --init < /dev/null || echo "ERROR failed to init passive database."
-  - strace -f -T -r test "$DB" = "maxmind" || test "$DB" = "neo4j" || ivre scancli --init < /dev/null || echo "ERROR failed to init nmap database."
-  - strace -f -T -r test "$DB" = "maxmind" || test "$DB" = "neo4j" || ivre view --init < /dev/null || echo "ERROR failed to init view database."
-  - strace -f -T -r test "$DB" != "neo4j" || ivre flowcli --init < /dev/null || echo "ERROR failed to init flow database."
-  - strace -f -T -r cat .travis/ivre.conf >> ~/.ivre.conf
+  - test "$DB" = "maxmind" || test "$DB" = "neo4j" || ivre ipinfo --init < /dev/null || echo "ERROR failed to init passive database."
+  - test "$DB" = "maxmind" || test "$DB" = "neo4j" || ivre scancli --init < /dev/null || echo "ERROR failed to init nmap database."
+  - test "$DB" = "maxmind" || test "$DB" = "neo4j" || ivre view --init < /dev/null || echo "ERROR failed to init view database."
+  - test "$DB" != "neo4j" || ivre flowcli --init < /dev/null || echo "ERROR failed to init flow database."
+  - cat .travis/ivre.conf >> ~/.ivre.conf
   - echo "NMAP_SHARE_PATH = '`pwd`/usr/local/nmap/share/nmap'" >> ~/.ivre.conf
   # install p0f, Bro & Nmap (.tar files)
   # for some reason, wget on travis-ci won't accept letsencrypt certificate
@@ -189,7 +189,7 @@ before_script:
 script: (test "$DB" != "maxmind" || test "$TRAVIS_PYTHON_VERSION" = 2.6 || test "$TRAVIS_PYTHON_VERSION" = 3.3 || (flake8 --ignore= setup.py bin/ivre && flake8 --ignore=E402,W504 tests/tests.py && flake8 --ignore=W504 ivre/ && echo "flake8 OK (except W504)")) && (test "$DB" != "maxmind" || test "$TRAVIS_PYTHON_VERSION" != 3.7 || (codespell  --ignore-words=.travis/codespell_ignore `git ls-files | grep -vE '^web/static/(an|bs|d3|jq|lk)/|^data/|\.(png|gif)$'` && echo "codespell OK")) && cd tests/ && coverage erase && coverage run --parallel-mode tests.py --coverage && coverage combine && coverage report
 
 after_success:
-  - strace -f -T -r codecov
+  - codecov
 
 after_failure:
-  - strace -f -T -r cat /tmp/webserver.log
+  - cat /tmp/webserver.log
